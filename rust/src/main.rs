@@ -32,6 +32,7 @@ use selenium_manager::{REQUEST_TIMEOUT_SEC, SM_BETA_LABEL};
 use std::backtrace::{Backtrace, BacktraceStatus};
 use std::path::Path;
 use std::process::exit;
+use std::sync::mpsc::Receiver;
 
 /// Automated driver management for Selenium
 #[derive(Parser, Debug)]
@@ -226,7 +227,12 @@ fn main() {
         .and_then(|_| selenium_manager.setup())
         .map(|driver_path| {
             let log = selenium_manager.get_logger();
-            log_driver_and_browser_path(log, &driver_path, selenium_manager.get_browser_path());
+            log_driver_and_browser_path(
+                log,
+                &driver_path,
+                selenium_manager.get_browser_path(),
+                selenium_manager.get_receiver(),
+            );
             flush_and_exit(OK, log, None);
         })
         .unwrap_or_else(|err| {
@@ -243,6 +249,7 @@ fn main() {
                     log,
                     &best_driver_from_cache,
                     selenium_manager.get_browser_path(),
+                    selenium_manager.get_receiver(),
                 );
                 flush_and_exit(OK, log, Some(err));
             } else if selenium_manager.is_offline() {
@@ -255,7 +262,15 @@ fn main() {
         });
 }
 
-fn log_driver_and_browser_path(log: &Logger, driver_path: &Path, browser_path: &str) {
+fn log_driver_and_browser_path(
+    log: &Logger,
+    driver_path: &Path,
+    browser_path: &str,
+    receiver: &Receiver<String>,
+) {
+    if let Ok(err) = receiver.try_recv() {
+        log.warn(err.to_string());
+    }
     if driver_path.exists() {
         log.info(format!("{}{}", DRIVER_PATH, driver_path.display()));
     } else {
