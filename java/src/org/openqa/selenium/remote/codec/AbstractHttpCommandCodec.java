@@ -17,11 +17,8 @@
 
 package org.openqa.selenium.remote.codec;
 
-import static com.google.common.net.HttpHeaders.CACHE_CONTROL;
-import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
-import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
-import static com.google.common.net.MediaType.JSON_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.openqa.selenium.json.Json.JSON_UTF_8;
 import static org.openqa.selenium.json.Json.MAP_TYPE;
 import static org.openqa.selenium.remote.DriverCommand.ADD_COOKIE;
 import static org.openqa.selenium.remote.DriverCommand.ADD_CREDENTIAL;
@@ -119,6 +116,7 @@ import org.openqa.selenium.net.Urls;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.CommandCodec;
 import org.openqa.selenium.remote.SessionId;
+import org.openqa.selenium.remote.http.HttpHeader;
 import org.openqa.selenium.remote.http.HttpMethod;
 import org.openqa.selenium.remote.http.HttpRequest;
 
@@ -280,13 +278,13 @@ public abstract class AbstractHttpCommandCodec implements CommandCodec<HttpReque
       String content = json.toJson(parameters);
       byte[] data = content.getBytes(UTF_8);
 
-      request.setHeader(CONTENT_LENGTH, String.valueOf(data.length));
-      request.setHeader(CONTENT_TYPE, JSON_UTF_8.toString());
+      request.setHeader(HttpHeader.ContentLength.getName(), String.valueOf(data.length));
+      request.setHeader(HttpHeader.ContentType.getName(), JSON_UTF_8.toString());
       request.setContent(bytes(data));
     }
 
     if (HttpMethod.GET == spec.method) {
-      request.setHeader(CACHE_CONTROL, "no-cache");
+      request.setHeader(HttpHeader.CacheControl.getName(), "no-cache");
     }
 
     return request;

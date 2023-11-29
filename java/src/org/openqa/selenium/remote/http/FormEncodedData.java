@@ -35,13 +35,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Deprecated(forRemoval = true) // should be moved to testing
 public class FormEncodedData {
 
   public static Optional<Map<String, List<String>>> getData(HttpRequest request) {
     try {
       String contentType = request.getHeader("Content-Type");
       MediaType type = MediaType.parse(contentType);
-      if (!type.is(MediaType.FORM_DATA)) {
+      if (!contentType.matches("application/x-www-form-urlencoded")) {
         return Optional.empty();
       }
     } catch (IllegalArgumentException | NullPointerException e) {

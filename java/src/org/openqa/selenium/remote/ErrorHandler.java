@@ -19,7 +19,6 @@ package org.openqa.selenium.remote;
 
 import static org.openqa.selenium.remote.ErrorCodes.SUCCESS;
 
-import com.google.common.base.Throwables;
 import com.google.common.primitives.Ints;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -90,7 +89,12 @@ public class ErrorHandler {
 
     if (response.getValue() instanceof Throwable) {
       Throwable throwable = (Throwable) response.getValue();
-      Throwables.throwIfUnchecked(throwable);
+      if (throwable instanceof Error) {
+        throw (Error) throwable;
+      }
+      if (throwable instanceof RuntimeException) {
+        throw (RuntimeException) throwable;
+      }
       throw new RuntimeException(throwable);
     }
 
